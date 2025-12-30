@@ -1,0 +1,11 @@
+Smart Contract Lottery 
+
+This lottery contract is from the Cyfrin Updaft course. I’m using it my own way to study, build scripts, and write tests to make sure I really understand how it works.
+
+Key Goals:
+
+Random winner selection via Chainlink VRF
+
+Deploy & interact with scripts
+
+Tested for reliability
