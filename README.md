@@ -1,67 +1,26 @@
-## Foundry
+Smart Contract Lottery
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This project is based on the Cyfrin Updraft Smart Contract Lottery, but the implementation here is my own study-driven rebuild.
 
-Foundry consists of:
+Instead of just watching the course and nodding, I’m:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+Writing my own deployment & interaction scripts
 
-## Documentation
+Building tests to break and verify the contract
 
-https://book.getfoundry.sh/
+Re-implementing logic until it clicks
 
-## Usage
+The goal isn’t originality — it’s deep understanding.
 
-### Build
+🚀 Key Features
 
-```shell
-$ forge build
-```
+🎲 Provably fair winner selection using Chainlink VRF
 
-### Test
+🛠️ Custom Foundry scripts for deployment and interaction
 
-```shell
-$ forge test
-```
+✅ Thorough testing to ensure reliability and correctness
 
-### Format
+🧠 Why This Exists
 
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
-# SmartContractLottery
+Learning Solidity by doing > learning by watching.
+This repo documents my journey of understanding smart contracts line by line, not vibes only.
