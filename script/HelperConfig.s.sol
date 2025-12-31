@@ -15,12 +15,11 @@ abstract contract Constants {
 
     //Chain ID
     uint256 public constant SEPOLIA_CHAINID = 11155111;
-    uint256 public constant zKSYNC_CHAINID = 300;
     uint256 public constant LOCAL_CHAINID = 31337;
 }
 
 contract HelperConfig is Script, Constants {
-    NetworkConfig public networkConfig;
+    NetworkConfig public localnetworkConfig;
 
     struct NetworkConfig {
         uint256 subscriptionId;
@@ -35,31 +34,46 @@ contract HelperConfig is Script, Constants {
 
     constructor() {
         if (block.chainid == SEPOLIA_CHAINID) {
-            networkConfig = SepoliaConfig();
-        } else if (block.chainid == zKSYNC_CHAINID) {
-            networkConfig = zkSyncConfig();
+            localnetworkConfig = SepoliaConfig();
         } else if (block.chainid == LOCAL_CHAINID) {
-            networkConfig = AnvilConfig();
+            localnetworkConfig = AnvilConfig();
         } else {
             revert HelperConfig__ChainNotSupporter();
         }
     }
 
     function SepoliaConfig() public returns (NetworkConfig memory) {
-      NetworkConfig memory SepConfig = NetworkConfig 
-        ( {
-         subscriptionId : 0,
-         gasLane : 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
-         interval : 30,
-         entranceFee : 1 ether,
-         callbackGasLimit : 150_000,
-         vrfCoordinatorV2 : address(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B) }
-        )
-      ;
-      return SepConfig;
+        NetworkConfig memory SepConfig = NetworkConfig({
+            subscriptionId: 0,
+            gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
+            interval: 30,
+            entranceFee: 0.01 ether,
+            callbackGasLimit: 150_000,
+            vrfCoordinatorV2: address(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B)
+        });
+       
+       networkConfig = SepConfig;
+
+        return SepConfig;
     }
 
-    function zkSyncConfig() public returns (NetworkConfig memory) {}
+    function AnvilConfig() public returns (NetworkConfig memory) {
+        if (localnetworkConfig.vrfCoordinatorV2 != address(0)) {
+            return localnetworkConfig;
+        }
 
-    function AnvilConfig() public returns (NetworkConfig memory) {}
+        VRFCoordinatorV2_5Mock vrfCoordinatorV2_5Mock = new VRFCoordinatorV2_5Mock(BASEFEE, GASPRICE, WEIPERUNITLINK);
+        NetworkConfig memory LocalConfig = NetworkConfig({
+            subscriptionId: 0,
+            gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
+            interval: 30,
+            entranceFee: 0.01 ether,
+            callbackGasLimit: 150_000,
+            vrfCoordinatorV2: address(vrfCoordinatorV2_5Mock)
+        });
+         
+        networkConfig = LocalConfig;
+
+        return LocalConfig;
+    }
 }
