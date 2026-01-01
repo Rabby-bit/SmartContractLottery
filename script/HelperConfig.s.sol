@@ -32,14 +32,19 @@ contract HelperConfig is Script, Constants {
 
     error HelperConfig__ChainNotSupporter();
 
+    mapping(uint256 chainId => NetworkConfig) public networkConfigs;
+
     constructor() {
-        if (block.chainid == SEPOLIA_CHAINID) {
-            localnetworkConfig = SepoliaConfig();
-        } else if (block.chainid == LOCAL_CHAINID) {
-            localnetworkConfig = AnvilConfig();
-        } else {
-            revert HelperConfig__ChainNotSupporter();
-        }
+        networkConfigs[SEPOLIA_CHAINID] = SepoliaConfig();
+        networkConfigs[LOCAL_CHAINID] = AnvilConfig();
+
+        // if (block.chainid == SEPOLIA_CHAINID) {
+        //     localnetworkConfig = SepoliaConfig();
+        // } else if (block.chainid == LOCAL_CHAINID) {
+        //     localnetworkConfig = AnvilConfig();
+        // } else {
+        //     revert HelperConfig__ChainNotSupporter();
+        // }
     }
 
     function SepoliaConfig() public returns (NetworkConfig memory) {
@@ -51,8 +56,8 @@ contract HelperConfig is Script, Constants {
             callbackGasLimit: 150_000,
             vrfCoordinatorV2: address(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B)
         });
-       
-       networkConfig = SepConfig;
+
+        localnetworkConfig = SepConfig;
 
         return SepConfig;
     }
@@ -71,9 +76,13 @@ contract HelperConfig is Script, Constants {
             callbackGasLimit: 150_000,
             vrfCoordinatorV2: address(vrfCoordinatorV2_5Mock)
         });
-         
-        networkConfig = LocalConfig;
+
+        localnetworkConfig = LocalConfig;
 
         return LocalConfig;
+    }
+
+    function getlocalnetworkConfig() public view returns (NetworkConfig memory) {
+        return networkConfigs[block.chainid];
     }
 }
