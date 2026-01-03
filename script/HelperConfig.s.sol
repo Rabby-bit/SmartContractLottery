@@ -5,7 +5,7 @@ pragma solidity ^0.8.29;
 import {Script} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {console} from "forge-std/Script.sol";
-import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
 
 abstract contract Constants {
     //Mock Constant
@@ -49,7 +49,7 @@ contract HelperConfig is Script, Constants {
 
     function SepoliaConfig() public returns (NetworkConfig memory) {
         NetworkConfig memory SepConfig = NetworkConfig({
-            subscriptionId: 0,
+            subscriptionId: 80622678660144973197869773136185095184844476511147031463111626283704941619782,
             gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             interval: 30,
             entranceFee: 0.01 ether,
@@ -67,7 +67,7 @@ contract HelperConfig is Script, Constants {
             return localnetworkConfig;
         }
 
-        VRFCoordinatorV2_5Mock vrfCoordinatorV2_5Mock = new VRFCoordinatorV2_5Mock(BASEFEE, GASPRICE, WEIPERUNITLINK);
+        VRFCoordinatorV2Mock vrfCoordinatorV2_5Mock = new VRFCoordinatorV2Mock(BASEFEE, GASPRICE);
         NetworkConfig memory LocalConfig = NetworkConfig({
             subscriptionId: 0,
             gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
