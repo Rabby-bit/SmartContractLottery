@@ -85,4 +85,12 @@ contract HelperConfig is Script, Constants {
     function getlocalnetworkConfig() public view returns (NetworkConfig memory) {
         return networkConfigs[block.chainid];
     }
+
+    function setSubscriptionId(uint256 _subId) external {
+        localnetworkConfig.subscriptionId = _subId;
+    }
+
+    function setVRFCoordinator(address vrfCoordinatorV2) external {
+        localnetworkConfig.vrfCoordinatorV2 = vrfCoordinatorV2;
+    }
 }

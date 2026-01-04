@@ -11,11 +11,11 @@ import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFC
 import {DeployRaffle} from "script/DeployRaffle.s.sol";
 
 contract RaffleTest is Script, Test {
-
     error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
     error Raffle__TransferFailed();
     error Raffle__SendMoreToEnterRaffle();
     error Raffle__RaffleNotOpen();
+
     Raffle raffle;
     HelperConfig helperConfig;
     DeployRaffle deployRaffle;
@@ -24,13 +24,13 @@ contract RaffleTest is Script, Test {
     uint256 i_interval;
 
     function setUp() public {
-     address player = makeAddr("player");
-     vm.deal(player, 25 ether);
-     DeployRaffle deployer = new DeployRaffle();
-     ( raffle, helperConfig ) = deployer.deployRaffle();
-     }
+        address player = makeAddr("player");
+        vm.deal(player, 25 ether);
+        DeployRaffle deployer = new DeployRaffle();
+        (raffle, helperConfig) = deployer.deployRaffle();
+    }
 
-     function test__EnterRaffleWithCorrectAmountOfEther() public {
+    function test__EnterRaffleWithCorrectAmountOfEther() public {
         //Arrange
         address player = makeAddr("player");
         s_raffleState = Raffle.RaffleState.OPEN;
@@ -43,12 +43,11 @@ contract RaffleTest is Script, Test {
         uint256 rafflebalanceafter = address(raffle).balance;
 
         //Assert
-        assertEq(rafflebalanceafter , 2 ether, "Correct Amount of Ether sent");
+        assertEq(rafflebalanceafter, 2 ether, "Correct Amount of Ether sent");
         assertEq(playerbalance, 23 ether, "Correct Amount of Ether Deducted");
+    }
 
-     }
-
-     function test__EnterRaffleWithOutEnoughEther () public {
+    function test__EnterRaffleWithOutEnoughEther() public {
         //Arrange
         address player = makeAddr("player");
         s_raffleState = Raffle.RaffleState.OPEN;
@@ -58,12 +57,9 @@ contract RaffleTest is Script, Test {
         vm.expectRevert(Raffle__SendMoreToEnterRaffle.selector);
         vm.prank(player);
         raffle.enterRaffle{value: 0 ether}();
-        
-        
-        
-     }
+    }
 
-     function test__RaffleRevertWhenStateIsCalculating() public {
+    function test__RaffleRevertWhenStateIsCalculating() public {
         //Arrange
         address player = makeAddr("player");
         //s_raffleState = Raffle.RaffleState.CALCULATING;
@@ -75,9 +71,7 @@ contract RaffleTest is Script, Test {
         vm.deal(address(raffle), 10 ether);
         uint256 rafflebalance = address(raffle).balance;
         console.log("Raffle Balance before entering", rafflebalance);
-        vm.warp(block.timestamp +  raffle.getInterval()  + 1);
-
-        
+        vm.warp(block.timestamp + raffle.getInterval() + 1);
 
         raffle.performUpkeep("");
 
@@ -86,9 +80,5 @@ contract RaffleTest is Script, Test {
         vm.expectRevert(Raffle__RaffleNotOpen.selector);
         vm.prank(player);
         raffle.enterRaffle{value: 2 ether}();
-       
-        
-
-     }
-
+    }
 }

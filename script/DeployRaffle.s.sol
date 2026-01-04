@@ -7,6 +7,9 @@ import {Raffle} from "../src/Raffle.sol";
 import {console} from "forge-std/Script.sol";
 import {HelperConfig} from "../script/HelperConfig.s.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {CreateSubscription} from "script/Interactions.s.sol";
+import {FundSubscription} from "script/Interactions.s.sol";
+import {AddConsumer} from "script/Interactions.s.sol";
 
 contract DeployRaffle is Script {
     /**
