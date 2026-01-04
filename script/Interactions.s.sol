@@ -11,22 +11,23 @@ import {DeployRaffle} from "script/DeployRaffle.s.sol";
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import {LinkToken} from "test/intergration/LinkToken.sol";
 
-contract CreateSubscription is Script {
+contract CreateandFundSubscription is Script {
     uint96 public constant BASEFEE = 0.25 ether;
     uint96 public constant GASPRICE = 1e9;
     int256 public constant WEIPERUNITLINK = 4e15;
 
     uint96 public constant AMOUNT = 3 ether;
 
-    HelperConfig helperConfig;
+    HelperConfig public helperConfig;
     Raffle raffle;
 
     function getvrfCoordinatorUsingConfig() public returns (address) {
         //HelperConfig helperConfig = new HelperConfig();
+        helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = helperConfig.getlocalnetworkConfig();
-        VRFCoordinatorV2Mock vrfCoordinator = VRFCoordinatorV2Mock(networkConfig.vrfCoordinatorV2);
-        helperConfig.setVRFCoordinator(vrfCoordinator);
-        return address(vrfCoordinator);
+        VRFCoordinatorV2Mock vrfCoordinatorV2 = VRFCoordinatorV2Mock(networkConfig.vrfCoordinatorV2);
+        helperConfig.setVRFCoordinator(address(vrfCoordinatorV2));
+        return address(vrfCoordinatorV2);
     }
 
     function createSubscription(address vrfCoordinator) public returns (uint64 subId) {
@@ -39,18 +40,6 @@ contract CreateSubscription is Script {
         return subId;
     }
 
-    function run() external returns (uint64) {
-        address vrfCoordinator = getvrfCoordinatorUsingConfig();
-        return createSubscription(vrfCoordinator);
-    }
-}
-
-contract FundSubscription is Script {
-    // uint94 public constant AMOUNT = 4 ether;
-    uint96 public constant AMOUNT = 3 ether;
-
-    HelperConfig helperConfig;
-
     function fundSubscription() public {
         uint64 subId = uint64(helperConfig.getlocalnetworkConfig().subscriptionId);
         address vrfCoordinator = helperConfig.getlocalnetworkConfig().vrfCoordinatorV2;
@@ -60,10 +49,12 @@ contract FundSubscription is Script {
         vm.stopBroadcast();
     }
 
-    function run() external {
-        uint64 subId = uint64(helperConfig.getlocalnetworkConfig().subscriptionId);
-        address vrfCoordinator = helperConfig.getlocalnetworkConfig().vrfCoordinatorV2;
+    function run() external returns (uint64, HelperConfig) {
+        address vrfCoordinator = getvrfCoordinatorUsingConfig();
+        uint64 subId = createSubscription(vrfCoordinator);
         fundSubscription();
+        return (subId, helperConfig);
+        // fundSubscription();
     }
 }
 
@@ -72,14 +63,14 @@ contract AddConsumer is Script {
     Raffle raffle;
 
     function addConsumer() public {
-        Raffle raffle = new Raffle();
-        address newRaffle = address(raffle);
+        DeployRaffle deployer = new DeployRaffle();
+        (Raffle newRaffle,) = deployer.deployRaffle();
 
         uint64 subId = uint64(helperConfig.getlocalnetworkConfig().subscriptionId);
         address vrfCoordinator = helperConfig.getlocalnetworkConfig().vrfCoordinatorV2;
 
         vm.startBroadcast();
-        VRFCoordinatorV2Mock(vrfCoordinator).addConsumer(subId, newRaffle);
+        VRFCoordinatorV2Mock(vrfCoordinator).addConsumer(subId, address(newRaffle));
         vm.stopBroadcast();
     }
 

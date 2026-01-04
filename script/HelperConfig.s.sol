@@ -54,7 +54,7 @@ contract HelperConfig is Script, Constants {
             interval: 30,
             entranceFee: 0.01 ether,
             callbackGasLimit: 150_000,
-            vrfCoordinatorV2: address(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B)
+            vrfCoordinatorV2: address(0)
         });
 
         localnetworkConfig = SepConfig;
@@ -83,7 +83,8 @@ contract HelperConfig is Script, Constants {
     }
 
     function getlocalnetworkConfig() public view returns (NetworkConfig memory) {
-        return networkConfigs[block.chainid];
+        NetworkConfig memory configCopy = localnetworkConfig; // copy from storage to memory
+        return configCopy;
     }
 
     function setSubscriptionId(uint256 _subId) external {
