@@ -6,10 +6,8 @@ import {Script} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {console} from "forge-std/Script.sol";
 import {HelperConfig} from "../script/HelperConfig.s.sol";
-import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
-import {CreateandFundSubscription} from "script/Interactions.s.sol";
-
-import {AddConsumer} from "script/Interactions.s.sol";
+import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
+import {CreateandFundandAddSubscription} from "script/Interactions.s.sol";
 
 contract DeployRaffle is Script {
     /**
@@ -20,15 +18,19 @@ contract DeployRaffle is Script {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getlocalnetworkConfig();
 
+        CreateandFundandAddSubscription interactions = new CreateandFundandAddSubscription();
+
+        address vrfCoordinator = interactions.getvrfCoordinatorUsingConfig();
+
+        uint64 subId = interactions.createSubscription(vrfCoordinator);
+
+        interactions.fundSubscription();
+
         Raffle raffle = new Raffle(
-            config.subscriptionId,
-            config.gasLane,
-            config.interval,
-            config.entranceFee,
-            config.callbackGasLimit,
-            config.vrfCoordinatorV2
+            subId, config.gasLane, config.interval, config.entranceFee, config.callbackGasLimit, config.vrfCoordinatorV2
         );
         vm.stopBroadcast();
+        interactions.addConsumer();
 
         return (raffle, helperConfig);
     }
