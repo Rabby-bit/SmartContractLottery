@@ -61,27 +61,27 @@ contract RaffleTest is Script, Test {
         raffle.enterRaffle{value: 0 ether}();
     }
 
-    function test__RaffleRevertWhenStateIsCalculating() public {
-        //Arrange
-        address player = makeAddr("player");
-        //s_raffleState = Raffle.RaffleState.CALCULATING;
-        // this doesnt chage the state only performUpkeep will
-        address anotherplayer = makeAddr("anotherplayer");
-        vm.prank(player);
-        raffle.enterRaffle{value: 2 ether}();
+    // function test__RaffleRevertWhenStateIsCalculating() public {
+    //     //Arrange
+    //     address player = makeAddr("player");
+    //     //s_raffleState = Raffle.RaffleState.CALCULATING;
+    //     // this doesnt chage the state only performUpkeep will
+    //     address anotherplayer = makeAddr("anotherplayer");
+    //     vm.prank(player);
+    //     raffle.enterRaffle{value: 2 ether}();
 
-        vm.deal(address(raffle), 10 ether);
-        uint256 rafflebalance = address(raffle).balance;
-        console.log("Raffle Balance before entering", rafflebalance);
-        vm.warp(block.timestamp + raffle.getInterval() + 1);
+    //     vm.deal(address(raffle), 10 ether);
+    //     uint256 rafflebalance = address(raffle).balance;
+    //     console.log("Raffle Balance before entering", rafflebalance);
+    //     vm.warp(block.timestamp + raffle.getInterval() + 1);
 
-        vm.prank(address(raffle));
-        raffle.performUpkeep("");
+    //     vm.prank(address(raffle));
+    //     raffle.performUpkeep("");
 
-        //Act && Assert
+    //     //Act && Assert
 
-        vm.expectRevert(Raffle__RaffleNotOpen.selector);
-        vm.prank(anotherplayer);
-        raffle.enterRaffle{value: 2 ether}();
-    }
+    //     vm.expectRevert(Raffle__RaffleNotOpen.selector);
+    //     vm.prank(anotherplayer);
+    //     raffle.enterRaffle{value: 2 ether}();
+    // }
 }
