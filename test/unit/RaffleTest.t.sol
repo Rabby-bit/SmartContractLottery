@@ -30,8 +30,6 @@ contract RaffleTest is Script, Test {
         vm.deal(player, 25 ether);
         DeployRaffle deployer = new DeployRaffle();
         (raffle, helperConfig) = deployer.deployRaffle();
-
-        
     }
 
     function test__EnterRaffleWithCorrectAmountOfEther() public {
@@ -77,7 +75,6 @@ contract RaffleTest is Script, Test {
         console.log("Raffle Balance before entering", rafflebalance);
         vm.warp(block.timestamp + raffle.getInterval() + 1);
 
-
         vm.prank(address(raffle));
         raffle.performUpkeep("");
 
@@ -86,6 +83,5 @@ contract RaffleTest is Script, Test {
         vm.expectRevert(Raffle__RaffleNotOpen.selector);
         vm.prank(anotherplayer);
         raffle.enterRaffle{value: 2 ether}();
-        
     }
 }
