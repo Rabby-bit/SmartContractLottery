@@ -21,10 +21,11 @@ contract CreateandFundandAddSubscription is Script {
     HelperConfig public helperConfig;
     Raffle public raffle;
 
-    function getvrfCoordinatorUsingConfig() public returns (address) {
-        //HelperConfig helperConfig = new HelperConfig();
-        helperConfig = new HelperConfig();
+    constructor(HelperConfig _helperConfig) {
+        helperConfig = _helperConfig;
+    }
 
+    function getvrfCoordinatorUsingConfig() public returns (address) {
         HelperConfig.NetworkConfig memory networkConfig = helperConfig.getlocalnetworkConfig();
         VRFCoordinatorV2Mock vrfCoordinatorV2 = VRFCoordinatorV2Mock(networkConfig.vrfCoordinatorV2);
         helperConfig.setVRFCoordinator(address(vrfCoordinatorV2));

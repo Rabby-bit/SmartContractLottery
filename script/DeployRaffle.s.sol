@@ -18,16 +18,17 @@ contract DeployRaffle is Script {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getlocalnetworkConfig();
 
-        CreateandFundandAddSubscription interactions = new CreateandFundandAddSubscription();
+        CreateandFundandAddSubscription interactions = new CreateandFundandAddSubscription(helperConfig);
 
-        address vrfCoordinator = interactions.getvrfCoordinatorUsingConfig();
+        address vrfCoordinator = config.vrfCoordinatorV2;
+        uint256 entranceFee = config.entranceFee;
 
         uint64 subId = interactions.createSubscription(vrfCoordinator);
 
         interactions.fundSubscription();
 
         Raffle raffle = new Raffle(
-            subId, config.gasLane, config.interval, config.entranceFee, config.callbackGasLimit, config.vrfCoordinatorV2
+            subId, config.gasLane, config.interval, entranceFee, config.callbackGasLimit, config.vrfCoordinatorV2
         );
         vm.stopBroadcast();
         interactions.addConsumer();

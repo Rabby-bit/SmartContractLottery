@@ -2,9 +2,13 @@
 
 pragma solidity ^0.8.19;
 
-import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
-import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
+// import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+// // import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+import {AutomationCompatibleInterface} from
+    "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 
 /**
  * @title A sample Raffle Contract
@@ -12,7 +16,7 @@ import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/inter
  * @notice This contract is for creating a sample raffle contract
  * @dev This implements the Chainlink VRF Version 2
  */
-contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
+contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /* Errors */
     error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
     error Raffle__TransferFailed();
@@ -27,11 +31,12 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     /* State variables */
     // Chainlink VRF Variables
-    uint256 private immutable i_subscriptionId;
+    uint64 private immutable i_subscriptionId;
     bytes32 private immutable i_gasLane;
     uint32 private immutable i_callbackGasLimit;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
+    VRFCoordinatorV2Interface private immutable s_vrfCoordinator;
 
     // Lottery Variables
     uint256 private immutable i_interval;
@@ -48,19 +53,18 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     /* Functions */
     constructor(
-        uint256 subscriptionId,
-        bytes32 gasLane, // keyHash
+        uint64 subscriptionId,
+        bytes32 gasLane,
         uint256 interval,
         uint256 entranceFee,
         uint32 callbackGasLimit,
         address vrfCoordinatorV2
-    ) VRFConsumerBaseV2Plus(vrfCoordinatorV2) {
-        i_gasLane = gasLane;
-        i_interval = interval;
+    ) VRFConsumerBaseV2(vrfCoordinatorV2) {
+        s_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
         i_subscriptionId = subscriptionId;
+        i_gasLane = gasLane;
         i_entranceFee = entranceFee;
-        s_raffleState = RaffleState.OPEN;
-        s_lastTimeStamp = block.timestamp;
+        i_interval = interval;
         i_callbackGasLimit = callbackGasLimit;
         // uint256 balance = address(this).balance;
         // if (balance > 0) {
@@ -121,17 +125,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
         // Will revert if subscription is not set and funded.
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
-                keyHash: i_gasLane,
-                subId: i_subscriptionId,
-                requestConfirmations: REQUEST_CONFIRMATIONS,
-                callbackGasLimit: i_callbackGasLimit,
-                numWords: NUM_WORDS,
-                extraArgs: VRFV2PlusClient._argsToBytes(
-                    // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
-                )
-            })
+            i_gasLane, i_subscriptionId, REQUEST_CONFIRMATIONS, i_callbackGasLimit, NUM_WORDS
         );
         // Quiz... is this redundant?
         emit RequestedRaffleWinner(requestId);
@@ -141,7 +135,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
      * @dev This is the function that Chainlink VRF node
      * calls to send the money to the random winner.
      */
-    function fulfillRandomWords(uint256, /* requestId */ uint256[] calldata randomWords) internal override {
+    function fulfillRandomWords(uint256, /* requestId */ uint256[] memory randomWords) internal override {
         // s_players size 10
         // randomNumber 202
         // 202 % 10 ? what's doesn't divide evenly into 202?
@@ -200,4 +194,9 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     function getNumberOfPlayers() public view returns (uint256) {
         return s_players.length;
     }
+
+    // ONLY for testing
+    function setRaffleState(RaffleState state) external {
+    s_raffleState = state;
+}
 }
