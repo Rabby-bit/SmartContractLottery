@@ -44,6 +44,8 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     uint256 private s_lastTimeStamp;
     address private s_recentWinner;
     address payable[] private s_players;
+    uint256 private s_requestId;
+
     RaffleState private s_raffleState;
 
     /* Events */
@@ -129,6 +131,8 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         );
         // Quiz... is this redundant?
         emit RequestedRaffleWinner(requestId);
+
+        s_requestId = requestId;
     }
 
     /**
@@ -195,8 +199,12 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         return s_players.length;
     }
 
+    function getRequestId() public view returns (uint256) {
+        return s_requestId;
+    }
+
     // ONLY for testing
     function setRaffleState(RaffleState state) external {
-    s_raffleState = state;
-}
+        s_raffleState = state;
+    }
 }
