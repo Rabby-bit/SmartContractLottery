@@ -10,6 +10,7 @@ import {HelperConfig} from "script/HelperConfig.s.sol";
 import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
 import {DeployRaffle} from "script/DeployRaffle.s.sol";
 import "forge-std/Vm.sol";
+import {RevertingReceiver} from "src/RevertingContract.sol";
 
 contract RaffleTest is Script, Test {
     error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
@@ -31,7 +32,6 @@ contract RaffleTest is Script, Test {
     uint64 subId;
     address vrfCoordinator;
     uint256 entranceFee;
-    address recentWinner;
 
     function setUp() public {
         address player = makeAddr("player");
@@ -242,14 +242,83 @@ contract RaffleTest is Script, Test {
         
         uint256 requestId = raffle.getRequestId();
         //Act && Assert
+        vm.expectEmit(true, false, false , false);
+         emit WinnerPicked(player);
        
         vm.startPrank(vrfCoordinator);
         VRFCoordinatorV2Mock(vrfCoordinator).fulfillRandomWords(requestId, address(raffle));
         vm.stopPrank();
+}
 
+ function test__IfFullfillRandomWordsWillTransferBalanceToWInner() public raffleSetToOpen{
+    //Arrange
+     address player = makeAddr("player");
+        vm.deal(player, 14 ether);
+        vm.prank(player);
+        raffle.enterRaffle{value: 2 ether}();
+        vm.warp(block.timestamp + raffle.getInterval() + 1);
+        vm.deal(address(raffle), 24 ether);
+        vm.roll(block.number + 1);
+        raffle.checkUpkeep("0x0");
+    
+        raffle.performUpkeep("");
 
+    uint256 requestId = raffle.getRequestId();
+    
 
+    vm.startPrank(vrfCoordinator);
+    VRFCoordinatorV2Mock(vrfCoordinator).fulfillRandomWords( requestId, address(raffle));
+    vm.stopPrank();
 
+    address recentWinner = raffle.getRecentWinner();
+
+    //Act && Assert
+    assertEq(recentWinner.balance , 36 ether);
+     }
+
+    //  function test__IfFullfillRandomWordsWillRevert() public raffleSetToOpen{
+    //     //Arrange
+    //     RevertingReceiver revertContract = new RevertingReceiver();
+    //     vm.deal(address(revertContract), 14 ether);
+    //     vm.prank(address(revertContract));
+    //     raffle.enterRaffle{value: 2 ether}();
+    //     vm.warp(block.timestamp + raffle.getInterval() + 1);
+    //     vm.deal(address(raffle), 24 ether);
+    //     vm.roll(block.number + 1);
+    //     raffle.checkUpkeep("0x0");
+    
+    //     raffle.performUpkeep("");
+
+    // uint256 requestId = raffle.getRequestId();
+    
+    
+    // vm.startPrank(vrfCoordinator);
+    // vm.expectRevert(Raffle.Raffle__TransferFailed.selector);
+    // VRFCoordinatorV2Mock(vrfCoordinator).fulfillRandomWords( requestId, address(raffle));
+    // vm.stopPrank();
+
+        
+    //  }
+
+    function test__TestTheGetterFunctions() public {
+    address player = makeAddr("player");
+    vm.deal(player, 6 ether);
+    vm.prank(player);
+    raffle.enterRaffle{value : 6 ether}();
+
+    uint256 realNumWords = raffle.getNumWords();
+    uint256 realgetRequestConfirmations = raffle.getRequestConfirmations();
+    address realgetRecentWinner = raffle.getRecentWinner();
+    address realgetPlayer = raffle.getPlayer(0);
+    uint256 realgetLastTImeStamp = raffle.getLastTimeStamp();
+    uint256 realgetEntranceFee = raffle.getEntranceFee();
+
+    assertEq(raffle.getNumWords(), 1);
+    assertEq(raffle.getRequestConfirmations(), 3);
+    assertEq(raffle.getRecentWinner(), address(0));
+    assertEq(raffle.getPlayer(0), address(player)); // if only the test contract entered
+    assertEq(raffle.getLastTimeStamp(), raffle.getLastTimeStamp()); // or expected timestamp
+    assertEq(raffle.getEntranceFee(), 2 ether);
     }
 
 }

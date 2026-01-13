@@ -34,7 +34,7 @@ contract CreateandFundandAddSubscription is Script {
 
     function createSubscription(address vrfCoordinator) public returns (uint64 subId) {
         // vm.startBroadcast();
-        uint64 subId = VRFCoordinatorV2Mock(vrfCoordinator).createSubscription();
+        subId = VRFCoordinatorV2Mock(vrfCoordinator).createSubscription();
         //HelperConfig helperConfig = new HelperConfig;
         helperConfig.setSubscriptionId(subId);
         // vm.stopBroadcast();
